@@ -1,0 +1,22 @@
+{
+	"name": "depthgenerator",
+	"main": "index.html",
+	"chromium-args": "--headless --ignore-gpu-blacklist --disable-raf-throttling --enable-gpu-async-worker-context",
+	"window":
+	{
+		"frame": true,
+		"width": 10,
+		"height": 10
+	},
+	"scripts":
+	{
+		"start": "nw install 0.33.4-sdk && nw ./"
+	},
+	"author": "tentone",
+	"license": "ISC",
+	"directories": {},
+	"dependencies":
+	{
+		"nwjs": ""
+	}
+}
