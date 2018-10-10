@@ -4,8 +4,8 @@
 	"chromium-args": "--headless --ignore-gpu-blacklist --disable-raf-throttling --enable-gpu-async-worker-context",
 	"window": {
 		"frame": true,
-		"width": 100,
-		"height": 100
+		"width": 300,
+		"height": 300
 	},
 	"scripts": {
 		"start": "nw install 0.33.4-sdk && nw ./"

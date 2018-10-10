@@ -3,6 +3,7 @@
 var input = "./data/";
 var output = "./output";
 var resolution = 256;
+var repetions = 3;
 
 var fs = require("fs");
 var gui = require("nw.gui");
@@ -11,19 +12,23 @@ document.body.onload = function()
 {
 	var files = fs.readdirSync(input);
 
-	for(var i = 0; i < files.length; i++)
+	for(var i = 0; i < 4; i++)//files.length; i++)
 	{
-		viewModel(input + files[i]);
-		break;
+		for(var j = 0; j < repetions; j++)
+		{
+			viewModel(files[i], j);
+		}
 	}
 };
 
-function viewModel(fname)
+function viewModel(fname, repetion)
 {
+	if(repetion === undefined)
+	{
+		repetion = 0;
+	}
+
 	var canvas = document.createElement("canvas");
-	canvas.style.position = "absolute";
-	canvas.style.top = "0px";
-	canvas.style.left = "0px";
 	canvas.style.width = resolution + "px";
 	canvas.style.height = resolution + "px";
 	canvas.width = resolution;
@@ -33,25 +38,27 @@ function viewModel(fname)
 	var renderer = new THREE.WebGLRenderer(
 	{
 		canvas: canvas,
-		alpha: true,
+		alpha: false,
 		logarithmicDepthBuffer: false,
 		context: null,
 		precision: "highp",
 		premultipliedAlpha: true,
 		antialias: true,
-		preserveDrawingBuffer: false,
+		preserveDrawingBuffer: true,
 		powerPreference: "high-performance"
 	});
 
-	var camera = new THREE.PerspectiveCamera(60, 1, 0, 1);
+	var camera = new THREE.PerspectiveCamera(60, 1, 0.3, 2.3);
+	camera.position.z = 1.3;
+	camera.updateProjectionMatrix();
 
 	var scene = new THREE.Scene();
 
-	var object = loadModel(fname);
-	object.position.z = -0.5;
+	var object = loadModel(input + fname);
 	scene.add(object);
 
-	renderer.render(camera, scene);
+	renderer.setSize(resolution, resolution, false);
+	renderer.render(scene, camera);
 }
 
 function scaleAndCenterObject(object)
@@ -70,7 +77,7 @@ function scaleAndCenterObject(object)
 		center.multiplyScalar(scale);
 
 		object.scale.set(scale, scale, scale);
-		object.position.set(-center.x, -scale * box.min.y, -center.z);
+		object.position.set(-center.x, -center.y, -center.z);
 	}
 };
 
@@ -83,11 +90,13 @@ function calculateBoundingBox(object)
 		if(children.geometry !== undefined)
 		{
 			children.geometry.computeBoundingBox();
-			var boundingBox = children.geometry.boundingBox;
+
+			var boundingBox = children.geometry.boundingBox.clone();
+			boundingBox.applyMatrix4(children.matrixWorld);
 
 			if(box === null)
 			{
-				box = boundingBox.clone();
+				box = boundingBox;
 			}
 			//Ajust box size
 			else
@@ -113,7 +122,6 @@ function loadModel(fname)
 	{
 		var loader = new THREE.OBJLoader();
 		obj = loader.parse(readFileText(fname));
-
 		obj.traverse(function(children)
 		{
 			if(children.material !== undefined)
@@ -128,6 +136,10 @@ function loadModel(fname)
 		var geometry = loader.parse(readFileArrayBuffer(fname));
 		obj = new THREE.Mesh(geometry, new THREE.MeshDepthMaterial());
 	}
+
+	obj.rotation.set(Math.random() * Math.PI* 2, Math.random() * Math.PI* 2, Math.random() * Math.PI* 2);
+	obj.updateMatrix();
+	obj.updateMatrixWorld(true);
 
 	scaleAndCenterObject(obj);
 
