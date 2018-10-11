@@ -1,4 +1,5 @@
 data/*
+output/*
 package-lock.json
 
 # Logs

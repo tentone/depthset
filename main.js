@@ -1,41 +1,46 @@
 "use strict";
 
 var input = "./data/";
-var output = "./output";
+var output = "./output/";
 var resolution = 256;
-var repetions = 3;
+var repetions = 10;
+var drawImages = false;
+var near = 0.3;
+var far = 2.0;
+var fov = 60.0;
+var distance = 1.2;
 
 var fs = require("fs");
 var gui = require("nw.gui");
 
+var canvas, renderer, camera;
+
 document.body.onload = function()
 {
+	createRenderer();
+
 	var files = fs.readdirSync(input);
 
-	for(var i = 0; i < 4; i++)//files.length; i++)
+	for(var i = 0; i < files.length; i++)
 	{
 		for(var j = 0; j < repetions; j++)
 		{
 			viewModel(files[i], j);
 		}
 	}
+
+	exit();
 };
 
-function viewModel(fname, repetion)
+function createRenderer()
 {
-	if(repetion === undefined)
-	{
-		repetion = 0;
-	}
-
-	var canvas = document.createElement("canvas");
+	canvas = document.createElement("canvas");
 	canvas.style.width = resolution + "px";
 	canvas.style.height = resolution + "px";
 	canvas.width = resolution;
 	canvas.height = resolution;
-	document.body.appendChild(canvas);
 
-	var renderer = new THREE.WebGLRenderer(
+	renderer = new THREE.WebGLRenderer(
 	{
 		canvas: canvas,
 		alpha: false,
@@ -48,9 +53,17 @@ function viewModel(fname, repetion)
 		powerPreference: "high-performance"
 	});
 
-	var camera = new THREE.PerspectiveCamera(60, 1, 0.3, 2.3);
-	camera.position.z = 1.3;
+	camera = new THREE.PerspectiveCamera(fov, 1, near, far);
+	camera.position.z = distance;
 	camera.updateProjectionMatrix();
+}
+
+function viewModel(fname, repetion)
+{
+	if(repetion === undefined)
+	{
+		repetion = 0;
+	}
 
 	var scene = new THREE.Scene();
 
@@ -59,6 +72,24 @@ function viewModel(fname, repetion)
 
 	renderer.setSize(resolution, resolution, false);
 	renderer.render(scene, camera);
+
+	var data = canvas.toDataURL();
+
+	if(drawImages)
+	{
+		var img = document.createElement("img");
+		img.src = data;
+		document.body.appendChild(img);
+	}
+
+	writeFileBase64(output + fname + repetion + ".png", data);
+}
+
+function writeFileBase64(fname, data)
+{
+	var buffer = Buffer.from(data.slice(data.search(";base64,") + 8), "base64");
+
+	fs.writeFileSync(fname, buffer);
 }
 
 function scaleAndCenterObject(object)
