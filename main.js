@@ -25,11 +25,14 @@ document.body.onload = function()
 	{
 		for(var j = 0; j < repetions; j++)
 		{
-			viewModel(files[i], j);
+			viewModel(files[i], i, j);
 		}
 	}
 
-	exit();
+	if(!drawImages)
+	{
+		exit();
+	}
 };
 
 function createRenderer()
@@ -58,7 +61,7 @@ function createRenderer()
 	camera.updateProjectionMatrix();
 }
 
-function viewModel(fname, repetion)
+function viewModel(fname, index, repetion)
 {
 	if(repetion === undefined)
 	{
@@ -82,7 +85,7 @@ function viewModel(fname, repetion)
 		document.body.appendChild(img);
 	}
 
-	writeFileBase64(output + fname + repetion + ".png", data);
+	writeFileBase64(output + index + "_" + repetion + ".png", data);
 }
 
 function writeFileBase64(fname, data)
